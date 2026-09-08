@@ -4,7 +4,12 @@ import { categories } from "@/db/schema";
 import { asc } from "drizzle-orm";
 
 export default async function CategoryNav({ active = "all" }: { active?: string }) {
-  const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder));
+  let rows: (typeof categories.$inferSelect)[] = [];
+  try {
+    rows = await db.select().from(categories).orderBy(asc(categories.sortOrder));
+  } catch (error) {
+    console.error("CategoryNav: failed to load categories:", error);
+  }
 
   const items = [
     { slug: "all", name: "All" },

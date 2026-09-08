@@ -13,6 +13,17 @@ export type ProductQuery = {
 };
 
 export async function queryProducts(query: ProductQuery): Promise<ProductDTO[]> {
+  try {
+    return await queryProductsUncached(query);
+  } catch (error) {
+    // Fail soft: if the database is unreachable (e.g. missing DATABASE_URL on a
+    // fresh deploy), render the page without product data instead of a 500.
+    console.error("queryProducts failed:", error);
+    return [];
+  }
+}
+
+async function queryProductsUncached(query: ProductQuery): Promise<ProductDTO[]> {
   const conditions: SQL[] = [];
 
   if (query.category && query.category !== "all") {
